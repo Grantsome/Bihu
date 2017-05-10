@@ -1,0 +1,252 @@
+package com.grantsome.newbihu.Util;
+
+import android.os.Handler;
+
+import com.qiniu.android.common.Zone;
+import com.qiniu.android.http.ResponseInfo;
+import com.qiniu.android.storage.Configuration;
+import com.qiniu.android.storage.UpCompletionHandler;
+import com.qiniu.android.storage.UploadManager;
+
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+/**
+ * Created by tom on 2017/4/27.
+ */
+
+public class HttpUtils {
+
+    public static void loadImage(String address, Callback callback){
+       if(address.endsWith("/")){
+           address = address.substring(0,address.length()-1);
+       }
+        String name = address.substring(address.lastIndexOf('/')+1);
+        File file = new File(ApplicationContext.getContext().getExternalCacheDir(),name);
+        if(file.exists()){
+            FileInputStream inputStream = null;
+            try{
+                inputStream = new FileInputStream(file);
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                byte[] temp = new byte[1024];
+                while (inputStream.read(temp)!=-1){
+                    outputStream.write(temp);
+                }
+                callback.onResponse(new Response(outputStream.toByteArray()));
+            }catch (Exception e){
+                e.printStackTrace();
+                callback.onFail(e);
+            }finally {
+                if(inputStream!=null){
+                    try {
+                        inputStream.close();
+                    }catch (Exception e){
+                        e.printStackTrace();
+                        callback.onFail(e);
+                    }
+                }
+            }
+        }else {
+            sendHttpRequest(address,null,callback);
+        }
+    }
+
+    public static void uploadImage(final byte[] data,final String name,final String param,final String address){
+        sendHttpRequest(ApiConstant.GET_TOKEN, null, new Callback() {
+            @Override
+            public void onResponse(Response response) {
+                upload(data,name,param,address,response.bodyString());
+            }
+
+            @Override
+            public void onFail(Exception e) {
+                ToastUtils.showError(e.toString());
+            }
+        });
+    }
+
+    private static void upload(byte[] data,String name,final String param,final String address,String token){
+        Configuration configuration = new Configuration.Builder().zone(Zone.zone2).build();
+        UploadManager uploadManager = new UploadManager(configuration);
+        uploadManager.put(data,name, token,new UpCompletionHandler() {
+
+            @Override
+            public void complete(String key, final ResponseInfo info, JSONObject response) {
+                if(info.isOK()){
+                    sendHttpRequest(address, param, new Callback() {
+                        @Override
+                        public void onResponse(Response response) {
+                            if(response.isSuccess()){
+                                ToastUtils.showHint("上传成功");
+                            }else {
+                                ToastUtils.showError(response.message());
+                            }
+                        }
+
+                        @Override
+                        public void onFail(Exception e) {
+                           ToastUtils.showError(info.error);
+                        }
+                    });
+                }else {
+                    ToastUtils.showError(info.error);
+                }
+            }
+        },null);
+    }
+
+    public static void sendHttpRequest(String address,String param){
+        sendHttpRequest(address, param, new Callback() {
+            @Override
+            public void onResponse(Response response) {
+
+            }
+
+            @Override
+            public void onFail(Exception e) {
+                ToastUtils.showError(e.toString());
+            }
+        });
+    }
+
+    public static void sendHttpRequest(final String address,final String param,final Callback callback){
+        if(!NetworkUtils.isNetWorkConnected(ApplicationContext.getContext())){
+            callback.onFail(new Exception("无法连接到网络"));
+            return;
+        }
+
+        final Handler handler = new Handler();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                HttpURLConnection connection =null;
+                try{
+                    URL url = new URL(address);
+                    connection = (HttpURLConnection) url.openConnection();
+                    connection.setReadTimeout(5000);
+                    connection.setConnectTimeout(10000);
+                    if(param==null){
+                        connection.setRequestMethod("GET");
+                    }else {
+                        connection.setRequestMethod("POST");
+                        connection.setDoInput(true);
+                        OutputStream os = connection.getOutputStream();
+                        os.write(param.getBytes());
+                        os.flush();
+                        os.close();
+                    }
+                    if(connection.getResponseCode()==200){
+                        final byte[] temp = read(connection.getInputStream());
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                callback.onResponse(new Response(temp));
+                            }
+                        });
+
+                        if(connection.getRequestMethod().equals("GET")){
+                            //截取的address里面/的部分+1
+                            String name = address.substring(address.lastIndexOf('/')+1);
+                            //通过Context.getExternalCacheDir()方法可以获取到 SDCard/Android/data/你的应用包名/cache/目录，一般存放临时缓存数据
+                            File file = new File(ApplicationContext.getContext().getExternalCacheDir(),name);
+                            FileOutputStream os = new FileOutputStream(file);
+                            os.write(temp);
+                            os.close();
+                        }
+                    }else {
+                        throw new Exception("无法连接到服务器");
+                    }
+
+                }catch (final Exception e){
+                    e.printStackTrace();
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            callback.onFail(e);
+                        }
+                    });
+                }finally {
+                    if(connection!=null){
+                        connection.disconnect();
+                    }
+                }
+            }
+        }).start();
+    }
+
+    private static byte[] read(InputStream is) throws IOException {
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        byte[] temp = new byte[1024];
+        int len;
+        while((len=is.read(temp))!=-1){
+            outputStream.write(temp,0,len);
+        }
+        is.close();
+        return outputStream.toByteArray();
+    }
+
+    public interface Callback {
+
+        void onResponse(Response response);
+
+        void onFail(Exception e);
+    }
+
+    public static class Response{
+
+        private int mStatus;
+
+        private String mInfo;
+
+        private byte[] mData;
+
+        Response(byte[] response){
+            String rawData = new String(response);
+            mInfo = JsonParser.getElement(rawData,"info");
+            if(mInfo==null){
+                mStatus = 200;
+                mData = response;
+            }else {
+                mStatus = Integer.parseInt(JsonParser.getElement(rawData,"status"));
+                if(JsonParser.getElement(rawData,"data")!=null){
+                    mData = JsonParser.getElement(rawData,"data").getBytes();
+                }else {
+                    mData = null;
+                }
+            }
+        }
+
+        public int getStatusCode(){
+            return mStatus;
+        }
+
+        public String getInfo() {
+            return mInfo;
+        }
+
+        public boolean isSuccess(){
+            return mStatus == 200;
+        }
+
+        public String message(){
+            return "status:" + mStatus + "\ninfo:" + mInfo;
+        }
+
+        public String bodyString(){
+            return new String(mData);
+        }
+
+        public byte[] bodyBytes(){
+            return mData;
+        }
+    }
+}

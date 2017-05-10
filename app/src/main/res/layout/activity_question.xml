@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/activity_question"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#f5f5f5"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="#fff"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        app:theme="@style/Base.ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:titleTextColor="#000">
+
+    </android.support.v7.widget.Toolbar>
+
+    <EditText
+        android:id="@+id/questionTitle"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="5"
+        android:background="#f5f5f5"
+        android:hint="@string/question_title_hint"
+        android:maxLength="20"
+        android:padding="10dp"
+        android:textSize="15dp"/>
+
+    <ImageButton
+        android:background="#000"
+        android:layout_width="match_parent"
+        android:layout_height="1px"/>
+
+    <EditText
+        android:id="@+id/questionDetail"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="#f5f5f5"
+        android:gravity="top|start"
+        android:hint="@string/question_detail_hint"
+        android:maxLength="500"
+        android:padding="10dp"
+        android:textSize="13dp"/>
+
+</LinearLayout>

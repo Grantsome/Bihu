@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/home"
+            android:icon="@drawable/ic_home_black_24dp"
+            android:title="@string/home"/>
+        <item
+            android:id="@+id/question"
+            android:icon="@drawable/ic_question_gray_24dp"
+            android:title="@string/question"/>
+        <item
+            android:id="@+id/favorite"
+            android:icon="@drawable/ic_star_black_24dp"
+            android:title="@string/favorite"/>
+        <item
+            android:title="@string/account_manage">
+            <menu>
+                <item
+                    android:title="@string/change_avatar"
+                    android:id="@+id/change_avatar"
+                    android:icon="@drawable/ic_person_black_24dp"/>
+                <item
+                    android:title="@string/change_password"
+                    android:icon="@drawable/ic_vpn_key_black_24dp"
+                    android:id="@+id/change_password"/>
+                <item
+                    android:id="@+id/quit_login"
+                    android:title="@string/quit_login"
+                    android:icon="@drawable/ic_arrow_back_black_24dp"/>
+            </menu>
+        </item>
+    </group>
+
+</menu>

@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">NewBiHu</string>
+    <string name="hint_user_name">用户名2~10个字符</string>
+    <string name="hint_password">密码6~18位</string>
+    <string name="login">登录</string>
+    <string name="register">注册</string>
+    <string name="welcome">欢迎来到逼乎</string>
+    <string name="warn_user_name">用户名过短</string>
+    <string name="warn_password">密码过短</string>
+    <string name="logining">登录中</string>
+    <string name="no_net_work">没有网络连接</string>
+    <string name="welcome_community">欢迎来到逼乎社区</string>
+    <string name="home">首页</string>
+    <string name="question">提问</string>
+    <string name="favorite">我的收藏</string>
+    <string name="account_manage">账户管理</string>
+    <string name="change_avatar">更换头像</string>
+    <string name="change_password">更改密码</string>
+    <string name="quit_login">退出登录</string>
+    <string name="load_more">加载更多</string>
+    <string name="load_finish_no_more">没有更多了</string>
+    <string name="loading">加载中...</string>
+    <string name="load_fail">加载失败</string>
+    <string name="upload_success">上传成功</string>
+    <string name="question_title_hint">标题</string>
+    <string name="question_detail_hint">问题描述...</string>
+    <string name="question_commit">提交</string>
+    <string name="question_commit_success">提交成功</string>
+    <string name="question_title_warn">题目不能为空</string>
+    <string name="question_detail_warn">内容不能为空</string>
+    <string name="answer_content_hint">说点什么吧</string>
+    <string name="answer">回复</string>
+    <string name="detail">详情</string>
+</resources>
